@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 
-更新：2018-09-24
+更新：
+  2019-02-01 type annotation を追加。pycodestyle で引っかかった箇所を修正。
+  2018-09-24
 作成：2018-09-13
 目的：
 　　・euc_jp の2バイトコード（全角漢字）のエリアマップの漢字部分
@@ -16,7 +18,7 @@
 
 入力ファイル：なし
 引数：なし
-対象：python3 
+対象：python3
 実行方法：python mk_euc_map.py
 
 参考：
@@ -24,26 +26,34 @@
 """
 # ------------------
 
-import os
-import binascii
-import sys, codecs
-import chardet
+# import os
+# import binascii
+import sys
+import codecs
+import io
 
-#--------------------
+# type annotation
+from typing import IO
+
+# 以下の行が無いと git bash で実行した時、unicodeEncodeError となる。それを防止する。
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+
+# --------------------
 # main()
-#--------------------
+# --------------------
 def main():
     import struct
 
-    out_path = "euc_code_table2.text"
-    fout = codecs.open(out_path, 'w', 'utf-8')
+    out_path: str = "euc_code_table2.text"
+    fout: IO[str] = codecs.open(out_path, 'w', 'utf-8')
 
     # 横のアドレス：下位8bit
     fout.write("  |")
     print("  |", end="")
     for n in range(0xa1, 0xff):
-        print("%02x" %n, end="")
-        fout.write("%02x" %n)
+        print("%02x" % n, end="")
+        fout.write("%02x" % n)
     print('\n', end="")
 
     # 横線
@@ -54,8 +64,8 @@ def main():
     for up in range(0xb0, 0xf5):
         for down in range(0xa1, 0xff):
             if (down == 0xa1):
-                print("\n%02x|" %up, end="")
-                fout.write("\n%02x|" %up)
+                print("\n%02x|" % up, end="")
+                fout.write("\n%02x|" % up)
             if ((up >= 0xf4) and (down >= 0xa7)):
                 print("�", end="")
                 fout.write("�")
@@ -67,14 +77,12 @@ def main():
             else:
                 val = up * 256 + down
                 chars = struct.pack('!H', val)
-                print (chars.decode('euc_jp'), end="")
+                print(chars.decode('euc_jp'), end="")
                 fout.write(chars.decode('euc_jp'))
 
     fout.close()
 
 
-#--------------------
+# --------------------
 if __name__ == '__main__':
     main()
-    
-
